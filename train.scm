@@ -3,8 +3,6 @@
 
 (use srfi-18)
 
-; a simple account object
-
 (define make-train
   (lambda (id time)
     (define synchronizer (make-synchronizer))
@@ -21,18 +19,18 @@
 (define a (make-train 1 0))
 (define b (make-train 2 0))
 
-(define (move id)
-	(
+(define (move-train id)
+	())
 
-(define (synchronized-move id)
+(define (synchronized-move-train id)
       (begin
         (define synchronizer ((id 'get-synchronizer)))    
-  ((synchronizer1 (synchronizer2 transfer)) from to amount))
+  ((synchronizer move-train)) id))
 
 (define trains
   (list
-    (make-thread (lambda () (print 'a: (synchronized-transfer a b 200))) 'p1)
-    (make-thread (lambda () (print 'b: (synchronized-transfer b a 300))) 'p2)))
+    (make-thread (lambda () (print 'a: (synchronized-move-train a))) 'p1)
+    (make-thread (lambda () (print 'b: (synchronized-move-train b))) 'p2)))
 
 (map thread-join! 
   (map thread-start! trains))
