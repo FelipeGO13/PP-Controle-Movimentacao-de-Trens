@@ -1,5 +1,5 @@
-(load "concurrent.scm")
-(import concurrent)
+(load "mapa-trem.scm")
+(import mapa)
 
 (use srfi-18)
 
