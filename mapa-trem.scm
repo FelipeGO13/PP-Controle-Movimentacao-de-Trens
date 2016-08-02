@@ -1,3 +1,6 @@
+;;modulo que simula a linha a ser percorrida. Trechos do caminho sao representados por numeros, estacoes sao os e<numero> e
+;;pontos de manobra sao indicados pelo m<numero>
+
 (module mapa (mapa-trem)
 	(import chicken scheme)
     (define mapa-trem
