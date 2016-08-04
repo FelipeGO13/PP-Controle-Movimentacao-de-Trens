@@ -7,7 +7,6 @@
 ;; objeto trem: este objeto simula a movimentação de um trem ao longo da um mapa/trajeto
 (define make-train
   (lambda (id time)
-    (define synchronizer (make-synchronizer)) 
     (define (set-speed) ; método que define a velocidade de um trem em função da quantidade de trens nos próximos 3 trechos a frente
       ())
     (define (calc-metrics) ; método que calcula métricas como, por exemplo, tempo médio de parada em estações
@@ -39,6 +38,5 @@
     (make-thread (lambda () (print 'b: (synchronized-move-train b))) 'p2)))
 
 ;; inicialização das threads definidas na lista trains
-(map thread-join! 
-  (map thread-start! trains))
+(map thread-join! (map thread-start! trains) (list 5 5))
 
