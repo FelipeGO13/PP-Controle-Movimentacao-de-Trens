@@ -31,18 +31,26 @@
 				(if (null? l) 
 					(reverse senhas)
 					(get-senha-i (cons (cadr (str-split (car l) #\:)) senhas) (cdr l)))))
+		(define autenticar
+			(let autenticar-i ((l lista-login))
+				(cond 
+					((null? l) "Acesso Negado")
+					((not (symbol? login)) "Acesso Negado - Login invalida")
+					((not (symbol? senha)) "Acesso Negado - Senha invalida")
+					((string=? (string-append (symbol->string login) ":" (symbol->string senha)) (car l)) "Seja Bem-Vindo")
+					(else (autenticar-i (cdr l))))))		
 		(define (get-lista) lista-login)
 			(lambda (m) ; dispatcher
 				(cond ((eq? m 'test) test)
 				((eq? m 'get-lista) lista-login)
 				((eq? m 'get-login) get-login)
 				((eq? m 'get-senha) get-senha)
+				((eq? m 'autenticar) autenticar)
 				(else (error "Unknown method"))))))
 		 
 ;; Teste para verificar funcionamento da função de autenticação
-(define teste (autenticacao 'joao.silva '12345))
-(print (teste 'get-lista))
-(print 'logins: (teste 'get-login))
-(print 'senhas: (teste 'get-senha))
+(define teste (autenticacao 'joao.silva 'a12345))
+(print 'senha: (teste 'get-senha))
+(print 'autenticando: (teste 'autenticar))
 
 
