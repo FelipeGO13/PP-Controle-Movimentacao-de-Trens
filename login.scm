@@ -1,3 +1,5 @@
+
+
 (load "ler_arquivo_usuarios.scm")
 (import leitura)
 
@@ -37,7 +39,10 @@
 					((null? l) "Acesso Negado")
 					((not (symbol? login)) "Acesso Negado - Login invalida")
 					((not (symbol? senha)) "Acesso Negado - Senha invalida")
-					((string=? (string-append (symbol->string login) ":" (symbol->string senha)) (car l)) "Seja Bem-Vindo")
+					((string=? (string-append (symbol->string login) ":" (symbol->string senha)) (car l))
+						(begin
+							(print "Seja Bem-Vindo")
+							(load "trem.scm")))
 					(else (autenticar-i (cdr l))))))		
 		(define (get-lista) lista-login)
 			(lambda (m) ; dispatcher
