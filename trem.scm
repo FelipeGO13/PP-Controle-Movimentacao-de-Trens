@@ -44,7 +44,8 @@
 			((null? l) (print "Errou"))
 			((= ((id 'get-id)) (cadar l)) (verify-move (cdr l) (car l) id))
 			(else (move-i (cdr l)))))
-			(print mapa))
+			(print mapa)
+			(move-train id))
 
 (define verify-move
 	(lambda (lista local id)
@@ -95,4 +96,4 @@
 
 ;; inicialização das threads definidas na lista trains
 (map thread-join! 
-	(map thread-start! trains)(list 2 2 2))
+	(map thread-start! trains)(list 10 10 10))
