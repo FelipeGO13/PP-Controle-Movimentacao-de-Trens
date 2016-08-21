@@ -18,8 +18,8 @@
       time)
   (define (get-id) ; método que define a velocidade de um trem em função da quantidade de trens nos próximos 3 trechos a frente
       id)
-    (define (calc-metrics) ; método que calcula métricas como, por exemplo, tempo médio de parada em estações
-      (set! time 5))
+    (define (calc-metrics time-move) ; método que calcula métricas como, por exemplo, tempo médio de parada em estações
+      (set! time (+ time time-move)))
     (define (get-synchronizer) synchronizer)
     (lambda (m) ; dispatcher
       (cond 
@@ -41,22 +41,39 @@
 (define (move-train id)
 	(let move-i ((l mapa))
 		(cond 
-			((null? l) (print "Errou"))
+			((null? l) (print "Erro ao movimentar trem"))
 			((= ((id 'get-id)) (cadar l)) (verify-move (cdr l) (car l) id))
 			(else (move-i (cdr l)))))
 			(print mapa)
+			(print "Tempo: "((id 'get-time)))
 			(move-train id))
 
 (define verify-move
 	(lambda (lista local id)
 		(let ver-i ((l lista)(n 3))
 			(cond 
-				((and (eq? (cadar l) 0) (eq? n 0)) (move-change id 3))
-				((null? l) (print "Errou"))
-				((= (cadar l) 0) 
-					(ver-i (cdr l) (- n 1)))
-				(else (thread-sleep! 1.0)
-				(ver-i l n))))))
+				((null? l) (print "Erro ao movimentar trem"))
+				((and (eq? n 0) (eq? 0 (cadar l)))
+					(begin 
+						(thread-sleep! 1.0)
+						((id 'calc-metrics) 1)
+						(move-change id 1)))
+				((and (eq? n 1) (not (eq? 0 (cadar l))))
+					(begin 
+						((id 'calc-metrics) 2)
+						(move-change id 1)))
+				((and (eq? n 2) (not (eq? 0 (cadar l))))
+					(begin 
+						(thread-sleep! 3.0)
+						((id 'calc-metrics) 3)
+						(move-change id 1)))
+				((and (eq? n 3) (not (eq? 0 (cadar l))))
+					(begin 
+						(thread-sleep! 4.0)
+						((id 'calc-metrics) 4)
+						(move-change id 1)))
+				((= (cadar l) 0) (ver-i (cdr l) (- n 1)))
+				(else (thread-sleep! 1.0) (ver-i l n))))))
 
 (define (move-change id posicao)
 	(let move-change-i ((l mapa))
@@ -93,7 +110,11 @@
     (make-thread (lambda () (print 'a: (synchronized-move-train a))) 'p1)
     (make-thread (lambda () (print 'b: (synchronized-move-train b))) 'p2)
 	(make-thread (lambda () (print 'c: (synchronized-move-train c))) 'p3)))
-
+	
 ;; inicialização das threads definidas na lista trains
 (map thread-join! 
 	(map thread-start! trains)(list 10 10 10))
+	
+
+
+
