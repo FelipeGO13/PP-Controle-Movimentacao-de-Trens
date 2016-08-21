@@ -49,8 +49,11 @@
 				(else (error "Unknown method"))))))
 		 
 ;; Teste para verificar funcionamento da função de autenticação
-(define teste (autenticacao 'joao.silva 'a12345))
-(print 'senha: (teste 'get-senha))
-(print 'autenticando: (teste 'autenticar))
 
+(print "Insira seu login")
+(define u-login (string->symbol (read-line)))
+(print "Insira sua senha")
+(define u-senha (string->symbol (read-line)))
+(define u-autentica (autenticacao u-login u-senha))
+(print (u-autentica 'autenticar))
 
