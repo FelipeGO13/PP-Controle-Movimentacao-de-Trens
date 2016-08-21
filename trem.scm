@@ -7,6 +7,7 @@
 
 (use srfi-18)
 (use srfi-1)
+(use extras)
 
 ;; objeto trem: este objeto simula a movimentação de um trem ao longo da um mapa/trajeto
 (define make-train
@@ -14,12 +15,13 @@
 	(define synchronizer (make-synchronizer))
     (define (set-speed) ; método que define a velocidade de um trem em função da quantidade de trens nos próximos 3 trechos a frente
       (set! time 5))
-    (define (get-time) ; método que retorna o tempo de viagem de um trem
+    (define (get-time) ; método que define a velocidade de um trem em função da quantidade de trens nos próximos 3 trechos a frente
       time)
-   (define (get-id) ; método que retorna o id de um trem
+   (define (get-id) ; método que define a velocidade de um trem em função da quantidade de trens nos próximos 3 trechos a frente
       id)
     (define (calc-metrics time-move) ; método que calcula métricas como, por exemplo, tempo médio de parada em estações
       (set! time (+ time time-move)))
+	  
     (define (get-synchronizer) synchronizer)
     (lambda (m) ; dispatcher
       (cond 
@@ -36,16 +38,69 @@
 (define c (make-train 3 0))
 
 (define mapa mapa-trem)
+(print "Insira o tempo desejado de simulação: ")
+(define runtime (string->number (read-line)))
 
-;; método responsável por atualizar a posição do trem na lista mapa (utiliza os métodos auxiliares verify-move e move-change)
+;;Lista que sera utilizada para os metodos do relatorio. (id tempo)
+(define lista-tempo '((1 0)(2 0)(3 0))) ;;Trem 1, 2 e 3
+
+;;Metodos para geracao dos dados do relatorio
+(define faz-total
+	(lambda (x)
+		(let total-i ((ls x)(acc 0))
+			(if (null? ls)
+				acc
+			(total-i (cdr ls)(+ acc (cadar ls)))))))
+			
+(define faz-media
+	(lambda (x)
+		(/ x 3)))
+
+(define update-tempo
+  (lambda (id tempo)
+    (set-car! (cdr (assq id lista-tempo)) tempo)))
+	
+(define (report)
+	(call-with-output-file "relatorio.txt"  
+		(lambda (output-port)
+			(display "Relatório de Simulação" output-port)
+			(newline output-port)
+			(display "ID|Tempo" output-port)
+				(newline output-port)
+					(let f ((ls lista-tempo))
+						(if (not (null? ls))
+							(begin
+								(display (car ls) output-port)
+								(newline output-port)
+								(f (cdr ls)))))
+				(newline output-port)
+				(define y (faz-total lista-tempo))
+				(display "Tempo Total: " output-port)
+				(display y output-port)
+				(newline output-port)
+				(display "Tempo medio: " output-port)
+				(display (exact->inexact (faz-media y)) output-port)
+				(newline output-port)
+				(display "Mapa da linha" output-port)
+				(newline output-port)
+				(display mapa output-port))))
+
+;; método responsável por atualizar a posição do trem na lista mapa (utiliza os métodos 'set-speed e 'calc-metrics)
 (define (move-train id)
 	(let move-i ((l mapa))
 		(cond 
+			((> (time->seconds (current-time)) runtime) 
+				(begin
+				(print "Gerando relatório de simulação...")
+				(report)
+				(thread-terminate! (current-thread))))
 			((null? l) (print "Erro ao movimentar trem"))
 			((= ((id 'get-id)) (cadar l)) (verify-move (cdr l) (car l) id))
 			(else (move-i (cdr l)))))
 			(print mapa)
 			(print "Tempo: "((id 'get-time)))
+			(print "Tempo de execução: "(time->seconds (current-time)))
+			(update-tempo ((id 'get-id)) ((id 'get-time)))
 			(move-train id))
 
 (define verify-move
@@ -116,7 +171,6 @@
         (define synchronizer ((id 'get-synchronizer))))    
   ((synchronizer move-train) id))
 
-
 (define trains
   (list
     (make-thread (lambda () (print 'a: (synchronized-move-train a))) 'p1)
@@ -125,4 +179,5 @@
 	
 ;; inicialização das threads definidas na lista trains
 (map thread-join! 
-(map thread-start! trains)(list 60 60 60))
+	(map thread-start! trains)(list (+ runtime 1) (+ runtime 1) (+ runtime 1)))
+
