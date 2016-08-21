@@ -39,12 +39,42 @@
 
 ;; método responsável por atualizar a posição do trem na lista mapa (utiliza os métodos 'set-speed e 'calc-metrics)
 (define (move-train id)
-(print "teste de execucao de threads")
-((id 'get-id))) 
+	(let move-i ((l mapa))
+		(cond 
+			((null? l) (print "Errou"))
+			((= ((id 'get-id)) (cadar l)) (verify-move (cdr l) (car l) id))
+			(else (move-i (cdr l)))))
+			(print mapa))
+
+(define verify-move
+	(lambda (lista local id)
+		(let ver-i ((l lista)(n 3))
+			(cond 
+				((and (eq? (cadar l) 0) (eq? n 0)) (move-change id 3))
+				((null? l) (print "Errou"))
+				((= (cadar l) 0) 
+					(ver-i (cdr l) (- n 1)))
+				(else (thread-sleep! 1.0)
+				(ver-i l n))))))
+
+(define (move-change id posicao)
+	(let move-change-i ((l mapa))
+			(cond 
+				((null? l) (print "Erro ao movimentar trem " ((id 'get-id))))
+				((= ((id 'get-id)) (cadar l))
+					(begin 
+						(print "Movimentando trem " ((id 'get-id)))
+						(set-car! (cdr (assq (caar l) mapa)) 0)
+						(let loop-i ((lista l) (n posicao))
+							(if (= n 0)
+								(set-car! (cdr (assq (caar lista) mapa)) ((id 'get-id)))
+								(loop-i (cdr lista) (- n 1))))))
+				(else (move-change-i (cdr l))))))	
+
 
 ;;Necessario implementar loop para setar posicao inicial dos trens
 (define (set-trains)
-	(set-car! (cdr (assq 'e0 mapa)) 1)
+	(set-car! (cdr (assq 'e0 mapa)) 1) 
 	(set-car! (cdr (assq 'e1 mapa)) 2)
 	(set-car! (cdr (assq 'e2 mapa)) 3))
 
@@ -66,5 +96,3 @@
 ;; inicialização das threads definidas na lista trains
 (map thread-join! 
 	(map thread-start! trains)(list 2 2 2))
-
-
