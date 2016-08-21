@@ -14,9 +14,9 @@
 	(define synchronizer (make-synchronizer))
     (define (set-speed) ; método que define a velocidade de um trem em função da quantidade de trens nos próximos 3 trechos a frente
       (set! time 5))
-    (define (get-time) ; método que define a velocidade de um trem em função da quantidade de trens nos próximos 3 trechos a frente
+    (define (get-time) ; método que retorna o tempo de viagem de um trem
       time)
-  (define (get-id) ; método que define a velocidade de um trem em função da quantidade de trens nos próximos 3 trechos a frente
+   (define (get-id) ; método que retorna o id de um trem
       id)
     (define (calc-metrics time-move) ; método que calcula métricas como, por exemplo, tempo médio de parada em estações
       (set! time (+ time time-move)))
@@ -37,7 +37,7 @@
 
 (define mapa mapa-trem)
 
-;; método responsável por atualizar a posição do trem na lista mapa (utiliza os métodos 'set-speed e 'calc-metrics)
+;; método responsável por atualizar a posição do trem na lista mapa (utiliza os métodos auxiliares verify-move e move-change)
 (define (move-train id)
 	(let move-i ((l mapa))
 		(cond 
@@ -52,33 +52,45 @@
 	(lambda (lista local id)
 		(let ver-i ((l lista)(n 3))
 			(cond 
-				((null? l) (print "Erro ao movimentar trem"))
+				((null? l) 
+					(begin
+						(let loop-i ((lp mapa))
+							(cond 
+								((null? lp) (print "Erro ao movimentar trem"))
+								((= ((id 'get-id)) (cadar lp))
+									(begin
+										(set! l (append lp (take mapa 29)))))
+								(else (loop-i (cdr lp)))))
+						(ver-i l 3)))
 				((and (eq? n 0) (eq? 0 (cadar l)))
 					(begin 
 						(thread-sleep! 1.0)
 						((id 'calc-metrics) 1)
-						(move-change id 1)))
+						(move-change id 1 l)))
 				((and (eq? n 1) (not (eq? 0 (cadar l))))
 					(begin 
 						((id 'calc-metrics) 2)
-						(move-change id 1)))
+						(move-change id 1 l)))
 				((and (eq? n 2) (not (eq? 0 (cadar l))))
 					(begin 
 						(thread-sleep! 3.0)
 						((id 'calc-metrics) 3)
-						(move-change id 1)))
+						(move-change id 1 l)))
 				((and (eq? n 3) (not (eq? 0 (cadar l))))
 					(begin 
 						(thread-sleep! 4.0)
 						((id 'calc-metrics) 4)
-						(move-change id 1)))
+						(move-change id 1 l)))
 				((= (cadar l) 0) (ver-i (cdr l) (- n 1)))
 				(else (thread-sleep! 1.0) (ver-i l n))))))
 
-(define (move-change id posicao)
+(define (move-change id posicao lp)
 	(let move-change-i ((l mapa))
 			(cond 
-				((null? l) (print "Erro ao movimentar trem " ((id 'get-id))))
+				((= 1 (length l)) 
+					(begin
+						(set! l lp)
+						(move-change-i l)))
 				((= ((id 'get-id)) (cadar l))
 					(begin 
 						(print "Movimentando trem " ((id 'get-id)))
@@ -113,8 +125,4 @@
 	
 ;; inicialização das threads definidas na lista trains
 (map thread-join! 
-	(map thread-start! trains)(list 10 10 10))
-	
-
-
-
+(map thread-start! trains)(list 60 60 60))
