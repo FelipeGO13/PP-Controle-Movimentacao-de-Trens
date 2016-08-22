@@ -32,17 +32,14 @@
 			((eq? m 'get-synchronizer) get-synchronizer)
             (else (error "Unknown method"))))))
 
-;; criação das threads/trens da linha de trem
-(define a (make-train 1 0))
-(define b (make-train 2 0))
-(define c (make-train 3 0))
-
 (define mapa mapa-trem)
 (print "Insira o tempo desejado de simulação: ")
 (define runtime (string->number (read-line)))
+(print "Insira o numero de trens: ")
+(define nt (string->number (read-line)))
 
 ;;Lista que sera utilizada para os metodos do relatorio. (id tempo)
-(define lista-tempo '((1 0)(2 0)(3 0))) ;;Trem 1, 2 e 3
+(define lista-tempo '((1 0)(2 0)(3 0)(4 0)(5 0)(6 0)(7 0)(8 0)))
 
 ;;Metodos para geracao dos dados do relatorio
 (define faz-total
@@ -54,7 +51,7 @@
 			
 (define faz-media
 	(lambda (x)
-		(/ x 3)))
+		(/ x nt)))
 
 (define update-tempo
   (lambda (id tempo)
@@ -67,12 +64,12 @@
 			(newline output-port)
 			(display "ID|Tempo" output-port)
 				(newline output-port)
-					(let f ((ls lista-tempo))
-						(if (not (null? ls))
+					(let f ((ls lista-tempo)(n nt))
+						(if (and (not (= n 0))(not (null? ls)))
 							(begin
 								(display (car ls) output-port)
 								(newline output-port)
-								(f (cdr ls)))))
+								(f (cdr ls)(- n 1)))))
 				(newline output-port)
 				(define y (faz-total lista-tempo))
 				(display "Tempo Total: " output-port)
@@ -156,28 +153,55 @@
 								(loop-i (cdr lista) (- n 1))))))
 				(else (move-change-i (cdr l))))))	
 
-
-;;Necessario implementar loop para setar posicao inicial dos trens
-(define (set-trains)
-	(set-car! (cdr (assq 'e0 mapa)) 1) 
-	(set-car! (cdr (assq 'e1 mapa)) 2)
-	(set-car! (cdr (assq 'e2 mapa)) 3))
-
-(set-trains)
-
 ;; definição do trecho crítico
 (define (synchronized-move-train id)
       (begin
         (define synchronizer ((id 'get-synchronizer))))    
   ((synchronizer move-train) id))
+  
+;; criação das threads/trens da linha de trem
+(if (> nt 0) (define a (make-train 1 0)))
+(if (> nt 1) (define b (make-train 2 0)))
+(if (> nt 2) (define c (make-train 3 0)))
+(if (> nt 3) (define d (make-train 4 0)))
+(if (> nt 4) (define e (make-train 5 0)))
+(if (> nt 5) (define f (make-train 6 0)))
+(if (> nt 6) (define g (make-train 7 0)))
+(if (> nt 7) (define h (make-train 8 0)))
+
+(define (set-trains)
+	(if (> nt 0) (set-car! (cdr (assq 'e0 mapa)) 1)) 
+	(if (> nt 1) (set-car! (cdr (assq 'e1 mapa)) 2))	
+	(if (> nt 2) (set-car! (cdr (assq 'e2 mapa)) 3))
+	(if (> nt 3) (set-car! (cdr (assq 'e3 mapa)) 4))
+	(if (> nt 4) (set-car! (cdr (assq 'e4 mapa)) 5))
+	(if (> nt 5) (set-car! (cdr (assq 'e5 mapa)) 6))
+	(if (> nt 6) (set-car! (cdr (assq 'e6 mapa)) 7))
+	(if (> nt 7) (set-car! (cdr (assq 'e7 mapa)) 8)))
+
+(set-trains)
 
 (define trains
   (list
-    (make-thread (lambda () (print 'a: (synchronized-move-train a))) 'p1)
-    (make-thread (lambda () (print 'b: (synchronized-move-train b))) 'p2)
-	(make-thread (lambda () (print 'c: (synchronized-move-train c))) 'p3)))
-	
+    	(make-thread (lambda () (print 'h: (synchronized-move-train h))) 'p8)
+	(make-thread (lambda () (print 'g: (synchronized-move-train g))) 'p7)
+	(make-thread (lambda () (print 'f: (synchronized-move-train f))) 'p6)
+	(make-thread (lambda () (print 'e: (synchronized-move-train e))) 'p5)
+	(make-thread (lambda () (print 'd: (synchronized-move-train d))) 'p4)
+	(make-thread (lambda () (print 'c: (synchronized-move-train c))) 'p3)
+	(make-thread (lambda () (print 'b: (synchronized-move-train b))) 'p2)
+	(make-thread (lambda () (print 'a: (synchronized-move-train a))) 'p1)))
+
+(if (< nt 8) (define trains (cdr trains)))
+(if (< nt 7) (define trains (cdr trains)))
+(if (< nt 6) (define trains (cdr trains)))
+(if (< nt 5) (define trains (cdr trains)))
+(if (< nt 4) (define trains (cdr trains)))
+(if (< nt 3) (define trains (cdr trains)))
+(if (< nt 2) (define trains (cdr trains)))
+(if (< nt 1) (define trains (cdr trains)))
+
 ;; inicialização das threads definidas na lista trains
 (map thread-join! 
-	(map thread-start! trains)(list (+ runtime 1) (+ runtime 1) (+ runtime 1)))
+(map thread-start! trains)(list (+ runtime 1) (+ runtime 1) (+ runtime 1) (+ runtime 1) (+ runtime 1) (+ runtime 1) (+ runtime 1) (+ runtime 1)))
 
